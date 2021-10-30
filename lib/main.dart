@@ -19,7 +19,7 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Flutter App'),
       ),
-      body: const Center(
+      body: Center(
         child: Text('Widget Playground!'),
       ),
     );
