@@ -12,9 +12,4 @@ class Transaction {
     required this.amount,
     required this.date,
   });
-
-  // custom getters
-  get formattedDate {
-    return "${date.year}-${date.month}-${date.day}";
-  }
 }
