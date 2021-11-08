@@ -20,14 +20,13 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Flutter App'),
       ),
-      // You can make any widget scrollable as long as the
-      // SingleChildScrollView
-      // is the child of a container with a defined height
+      // You can make any container WITH A DEFINED HEIGHT scrollable by making
+      // its child a SingleChildScrollView.
       // Here we are making the entire app body scrollable, and the
       // SingleChildScrollView widget is getting its height from the scaffold
       // widget, which is a top level widget with a height equaling the
       // device's height
-      // Making the whole app body scrollable solves the problem of overflow
+      // Making the whole app body scrollable can solve the problem of overflow
       // errors when the keyboard pops up
       body: SingleChildScrollView(
         child: Column(
