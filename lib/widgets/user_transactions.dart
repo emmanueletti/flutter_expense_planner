@@ -35,9 +35,11 @@ class _UserTransactionsState extends State<UserTransactions> {
       date: DateTime.now(),
     );
 
-    // setState called inside a handler function. If created outside, it will be
-    // a class method overriding the original implementation vs. a functional
-    // useage of its implementation.
+    // setState called inside a handler function _addNewTransaction . If
+    // created outside, it will be a class method overriding the original
+    // implementation vs. a functional useage of its implementation.
+    // Final setState call at the end of _addNewTransaction triggers a
+    // Flutter re-render
     setState(() {
       _userTransactions.add(newTx);
     });
