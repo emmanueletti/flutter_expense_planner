@@ -9,8 +9,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter App',
+      title: 'Personal Expenses',
       home: MyHomePage(),
+      // theme configures set colors and fonts and other values for the app
+      // can directly access the values using the context object
+      theme: ThemeData(
+        // primary swatch with automatically pull out the different shades
+        // of the primary color for the app widgets to access
+        primarySwatch: Colors.purple,
+        // no swatch setting for accent color
+        accentColor: Colors.amber,
+      ),
     );
   }
 }
@@ -65,10 +74,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  // context is an object with ALOT of metadata about the widget and its position
+  // in the widget tree. It is "passed" around automatically throughout the widget
+  // tree
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Flutter App'),
+        title: const Text('Personal Expenses'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
