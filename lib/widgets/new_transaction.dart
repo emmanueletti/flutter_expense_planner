@@ -1,14 +1,29 @@
 import 'package:flutter/material.dart';
 
-class NewTransaction extends StatelessWidget {
+class NewTransaction extends StatefulWidget {
   NewTransaction(this.setUserTxState, {Key? key}) : super(key: key);
   void Function(String, double) setUserTxState;
+
+  @override
+  State<NewTransaction> createState() => _NewTransactionState();
+}
+
+class _NewTransactionState extends State<NewTransaction> {
   final amountController = TextEditingController();
-  // Controller technique allows for a stateless widget to have instance fields
-  // that change without the widget being stateful.
   final titleController = TextEditingController();
-  void handleButtonPress() {
-    setUserTxState(titleController.text, double.parse(amountController.text));
+
+  void submitData() {
+    final enteredTitle = titleController.text;
+    // basic validation
+    final enteredAmount = double.parse(amountController.text);
+    if (enteredTitle.isEmpty || enteredAmount <= 0) {
+      return;
+    }
+    // "widget" property allows access to properties and methods of Widget
+    // class inside of State class. Only accessible inside State classes
+    widget.setUserTxState(enteredTitle, enteredAmount);
+
+    Navigator.of(context).pop();
   }
 
   @override
@@ -24,16 +39,31 @@ class NewTransaction extends StatelessWidget {
           children: <Widget>[
             TextField(
               controller: titleController,
-              decoration: InputDecoration(labelText: 'Title'),
+              decoration: const InputDecoration(labelText: 'Title'),
+
+              // (_) is a convention to signal that the function recieves an
+              // arguement, but we don't care about it. We just need a placeholder
+              // to accept it, but we don't plan on using it.
+              // To get around the requirements of onSubmitted without changing
+              // the submitData type, we wrap the function we want to call
+              // in an anonymous handler that we can make specific to onSubmitted's
+              // requirements.
+              // onsubmitted wants a function of type void Function(String)?
+              // while flat button's onpressed wants a function of type
+              // void Function()
+              onSubmitted: (_) => submitData(),
             ),
             TextField(
               controller: amountController,
-              decoration: InputDecoration(labelText: 'Amount'),
+              keyboardType:
+                  // requests the numbers keyboard to show
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(labelText: 'Amount'),
             ),
             FlatButton(
-              onPressed: handleButtonPress,
+              onPressed: submitData,
               textColor: Colors.purple,
-              child: Text('Add Transaction'),
+              child: const Text('Add Transaction'),
             )
           ],
         ),
