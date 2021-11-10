@@ -36,7 +36,7 @@ class Chart extends StatelessWidget {
         'day': DateFormat.E().format(weekDay).substring(0, 1),
         'amount': totalSum
       };
-    });
+    }).reversed.toList();
   }
 
   // calculates the total spending of the whole period of grouped transaction
@@ -59,10 +59,11 @@ class Chart extends StatelessWidget {
           children: groupedTransactionValues.map((data) {
             var spendingPercentOfTotal =
                 totalSpending == 0.0 ? 0.0 : data['amount'] / totalSpending;
-            // Flexfit is distribute available space
-            // Flexfit tight forces the children into thier available space
-            // and prevents them from growing beyond that
-            // think of it like css flexbox
+            // Flexible widget and its fit/Flexfit is used distribute available space
+            // think of it like css flexbox. Flex set to flexfit.loose is the default
+            // Lesson 106 to review
+            // Expanded widget is a shortcut for a Flexible widget with fit set
+            // to Fletfit.tight
             return Flexible(
               fit: FlexFit.tight,
               child:

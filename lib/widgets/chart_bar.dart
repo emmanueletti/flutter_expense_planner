@@ -13,8 +13,13 @@ class ChartBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        FittedBox(
-          child: Text('\$${spendingAmount.toStringAsFixed(0)}'),
+        // Fittedbox makes widgets within then shrink instead of wrap when they
+        // get to big for the container
+        Container(
+          height: 20,
+          child: FittedBox(
+            child: Text('\$${spendingAmount.toStringAsFixed(0)}'),
+          ),
         ),
         const SizedBox(
           height: 4,
@@ -48,6 +53,7 @@ class ChartBar extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
+        Text(label)
       ],
     );
   }
