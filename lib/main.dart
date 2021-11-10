@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_expense_planner/widgets/chart.dart';
 import 'package:flutter_expense_planner/widgets/new_transaction.dart';
 import 'package:flutter_expense_planner/widgets/transaction_list.dart';
 import 'models/transaction.dart';
@@ -11,14 +12,33 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Personal Expenses',
       home: MyHomePage(),
-      // theme configures set colors and fonts and other values for the app
-      // can directly access the values using the context object
+      // theme configures colors and fonts and other values for the app
+      // can directly access these set global values anywhere throughout the app
+      // using the context object
       theme: ThemeData(
         // primary swatch with automatically pull out the different shades
         // of the primary color for the app widgets to access
         primarySwatch: Colors.purple,
         // no swatch setting for accent color
         accentColor: Colors.amber,
+        // font name needs to match exactly as that in pubspec
+        fontFamily: 'Quicksand',
+        textTheme: ThemeData.light().textTheme.copyWith(
+              headline6: const TextStyle(
+                fontFamily: 'OpenSans',
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+        appBarTheme: AppBarTheme(
+          textTheme: ThemeData.light().textTheme.copyWith(
+                headline6: TextStyle(
+                  fontFamily: 'OpenSans',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+        ),
       ),
     );
   }
@@ -45,6 +65,17 @@ class _MyHomePageState extends State<MyHomePage> {
     )
   ];
 
+  List<Transaction> get _recentTransactions {
+    // Darts filter function
+    return _userTransactions.where((tx) {
+      return tx.date.isAfter(
+        DateTime.now().subtract(
+          const Duration(days: 7),
+        ),
+      );
+    }).toList();
+  }
+
   void _addNewTransaction(String txTitle, double txAmount) {
     final newTx = Transaction(
       // work around to get a unique id string
@@ -64,12 +95,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _startProcessAddingTransaction(BuildContext context, setUserTxState) {
+  // by convention, methods and fields in private state are themselves
+  // made private
+  void _openNewTransactionForm(BuildContext context, setUserTxState) {
+    // showModalBottomSheet is a function built into flutter
     showModalBottomSheet(
       context: context,
-      builder: (bctx) {
-        return NewTransaction(setUserTxState);
-      },
+      builder: (bctx) => NewTransaction(setUserTxState),
     );
   }
 
@@ -84,13 +116,8 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              // showModalBottomSheet is a function built into flutter
-              showModalBottomSheet(
-                context: context,
-                builder: (bctx) => NewTransaction(_addNewTransaction),
-              );
-            },
+            onPressed: () =>
+                _openNewTransactionForm(context, _addNewTransaction),
           ),
         ],
       ),
@@ -112,27 +139,23 @@ class _MyHomePageState extends State<MyHomePage> {
             // Container acts as the middle widget to control the size, which
             // subsequently controls the size of Card and Text as the sizeable
             // Container now serves as the direct child of Card and direct parent of Text
-            Card(
-              child: Container(
-                // A width of double.infinity is a enum representation of a behind
-                // the scenes number. "double.infinity" tells Flutter to give
-                // the widget as much width as possible.
-                width: double.infinity,
-                child: const Text('CHART!'),
-              ),
-              elevation: 5,
+            SizedBox(
+              // A width of double.infinity is a enum representation of a behind
+              // the scenes number. "double.infinity" tells Flutter to give
+              // the widget as much width as possible.
+              width: double.infinity,
+              child: Chart(_recentTransactions),
             ),
             TransactionList(_userTransactions),
           ],
         ),
       ),
 
-      // both named arguements to body
+      // both named arguements to Scaffold widget
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () =>
-            _startProcessAddingTransaction(context, _addNewTransaction),
+        onPressed: () => _openNewTransactionForm(context, _addNewTransaction),
       ),
     );
   }

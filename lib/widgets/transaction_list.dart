@@ -37,61 +37,81 @@ class TransactionList extends StatelessWidget {
       // and a function that will be called the x amount of times aka itemBuilder
       // the function will provide an index counter that can then be used to
       // reference an array/list
-      child: ListView.builder(
-        itemCount: userTransactions.length,
-        itemBuilder: (BuildContext context, int index) {
-          return SizedBox(
-            width: double.infinity,
-            child: Card(
-              child: Row(
-                children: <Widget>[
-                  Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Theme.of(context).primaryColor,
-                        width: 2,
-                      ),
-                    ),
-                    padding: const EdgeInsets.all(10),
-                    child: Text(
-                      // toStringAsFixed is the way to get a number to a specified
-                      // decimal place
-                      "\$${userTransactions[index].amount.toStringAsFixed(2)}",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
+      child: userTransactions.isEmpty
+          ? Column(
+              children: [
+                Text(
+                  'No transactions added yet!',
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+                const SizedBox(
+                  height: 50,
+                ),
+                SizedBox(
+                  height: 200,
+                  child: Image.asset(
+                    'assets/images/waiting.png',
+                    // same as doing image width/height as 100% in css
+                    // will cover the parents dimensions
+                    fit: BoxFit.cover,
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        userTransactions[index].title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                )
+              ],
+            )
+          : ListView.builder(
+              itemCount: userTransactions.length,
+              itemBuilder: (BuildContext context, int index) {
+                return SizedBox(
+                  width: double.infinity,
+                  child: Card(
+                    child: Row(
+                      children: <Widget>[
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 15,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Theme.of(context).primaryColor,
+                              width: 2,
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(10),
+                          child: Text(
+                            // toStringAsFixed is the way to get a number to a specified
+                            // decimal place
+                            "\$${userTransactions[index].amount.toStringAsFixed(2)}",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
                         ),
-                      ),
-                      Text(
-                        // DateFormat package
-                        DateFormat.yMMMd().format(userTransactions[index].date),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.grey),
-                      )
-                    ],
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              userTransactions[index].title,
+                              style: Theme.of(context).textTheme.headline6,
+                            ),
+                            Text(
+                              // DateFormat package
+                              DateFormat.yMMMd()
+                                  .format(userTransactions[index].date),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey),
+                            )
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }
