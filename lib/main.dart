@@ -22,6 +22,7 @@ class MyApp extends StatelessWidget {
         // no swatch setting for accent color
         accentColor: Colors.amber,
         // font name needs to match exactly as that in pubspec
+        errorColor: Colors.red,
         fontFamily: 'Quicksand',
         textTheme: ThemeData.light().textTheme.copyWith(
               headline6: const TextStyle(
@@ -52,7 +53,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Transaction> _userTransactions = [
+  List<Transaction> _userTransactions = [
     Transaction(
       id: 't1',
       title: 'New Shoes',
@@ -78,13 +79,13 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
 
-  void _addNewTransaction(String txTitle, double txAmount) {
+  void _addNewTransaction(String txTitle, double txAmount, DateTime txDate) {
     final newTx = Transaction(
       // work around to get a unique id string
       id: DateTime.now().toString(),
       title: txTitle,
       amount: txAmount,
-      date: DateTime.now(),
+      date: txDate,
     );
 
     // setState called inside a handler function _addNewTransaction . If
@@ -97,12 +98,20 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _deleteTransaction(String id) {
+    setState(() {
+      _userTransactions.removeWhere((tx) => tx.id == id);
+    });
+  }
+
   // by convention, methods and fields in private state are themselves
   // made private
   void _openNewTransactionForm(BuildContext context, setUserTxState) {
     // showModalBottomSheet is a function built into flutter
     showModalBottomSheet(
       context: context,
+      // bctx is a seperate context object from "context" passed to showmodal
+      // bctx is automatically passed in by Flutter
       builder: (bctx) => NewTransaction(setUserTxState),
     );
   }
@@ -148,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
               width: double.infinity,
               child: Chart(_recentTransactions),
             ),
-            TransactionList(_userTransactions),
+            TransactionList(_userTransactions, _deleteTransaction),
           ],
         ),
       ),

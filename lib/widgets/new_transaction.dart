@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class NewTransaction extends StatefulWidget {
   NewTransaction(this.setUserTxState, {Key? key}) : super(key: key);
 
-  void Function(String, double) setUserTxState;
+  void Function(String, double, DateTime) setUserTxState;
 
   @override
   State<NewTransaction> createState() => _NewTransactionState();
@@ -17,15 +17,21 @@ class _NewTransactionState extends State<NewTransaction> {
 
   // make methods in private classes private
   void _submitData() {
+    // basic validation
+    if (_amountController.text.isEmpty) {
+      return;
+    }
+
     final enteredTitle = _titleController.text;
+
     // basic validation
     final enteredAmount = double.parse(_amountController.text);
-    if (enteredTitle.isEmpty || enteredAmount <= 0) {
+    if (enteredTitle.isEmpty || enteredAmount <= 0 || _selectedDate == null) {
       return;
     }
     // "widget" property allows access to properties and methods of Widget
     // class inside of State class. Only accessible inside State classes
-    widget.setUserTxState(enteredTitle, enteredAmount);
+    widget.setUserTxState(enteredTitle, enteredAmount, _selectedDate!);
 
     Navigator.of(context).pop();
   }
@@ -42,7 +48,6 @@ class _NewTransactionState extends State<NewTransaction> {
       if (pickedDate == null) {
         return;
       }
-
       // Set state is a trigger to tell flutter that a property / state has
       // changed and build should be run again.
       // If property / state is changed without setstate being called - it will
