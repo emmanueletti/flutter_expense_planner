@@ -20,7 +20,7 @@ class TransactionList extends StatelessWidget {
     // its seems to look cleaner.
     return SizedBox(
       width: double.infinity,
-      height: 400,
+      height: MediaQuery.of(context).size.height * 0.6,
       // Here is an example of making a specific container WITH A DEFINED
       // HEIGHT (not just the entire app body ) scrollable. An alternate to
       // having a child be a SingleChildScrollView is to use ListView -
