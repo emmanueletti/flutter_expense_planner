@@ -121,17 +121,17 @@ class _MyHomePageState extends State<MyHomePage> {
   // in the widget tree. It is "passed" around automatically throughout the widget
   // tree
   Widget build(BuildContext context) {
+    final appBar = AppBar(
+      title: const Text('Personal Expenses'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () => _openNewTransactionForm(context, _addNewTransaction),
+        ),
+      ],
+    );
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Personal Expenses'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () =>
-                _openNewTransactionForm(context, _addNewTransaction),
-          ),
-        ],
-      ),
+      appBar: appBar,
       // You can make any container WITH A DEFINED HEIGHT scrollable by making
       // its child a SingleChildScrollView.
       // Here we are making the entire app body scrollable, and the
@@ -142,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // errors when the keyboard pops up
       body: SingleChildScrollView(
         child: Column(
-          children: <Widget>[
+          children: [
             // Reason to use Container as a middle widget to control the size is
             // b/c "Card" widget dimensions is dependent on the size of its children.
             // And "Text" widget dimensions is dependent on the size of its text
@@ -156,8 +156,18 @@ class _MyHomePageState extends State<MyHomePage> {
               // the widget as much width as possible.
               width: double.infinity,
               child: Chart(_recentTransactions),
+              height: (MediaQuery.of(context).size.height -
+                      appBar.preferredSize.height -
+                      MediaQuery.of(context).padding.top) *
+                  0.3,
             ),
-            TransactionList(_userTransactions, _deleteTransaction),
+            Container(
+              height: (MediaQuery.of(context).size.height -
+                      appBar.preferredSize.height -
+                      MediaQuery.of(context).padding.top) *
+                  0.7,
+              child: TransactionList(_userTransactions, _deleteTransaction),
+            ),
           ],
         ),
       ),
