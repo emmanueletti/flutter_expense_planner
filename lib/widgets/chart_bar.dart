@@ -31,6 +31,8 @@ class ChartBar extends StatelessWidget {
               height: constraints.maxHeight * 0.05,
             ),
             Container(
+              // Setting height to 60% of the max height widget is constrained
+              // to
               height: constraints.maxHeight * 0.6,
               width: 12,
               // Stack starts with the bottom most widget
