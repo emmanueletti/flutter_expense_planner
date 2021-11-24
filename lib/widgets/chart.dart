@@ -24,7 +24,8 @@ class Chart extends StatelessWidget {
         bool sameMonth = recentTransctions[i].date.month == weekDay.month;
         bool sameYear = recentTransctions[i].date.year == weekDay.year;
 
-        // if transactions all occured on the same day
+        // if transactions all occured on the same date aka (same day, same month
+        // same year).
         // isolating day, month, and year b/c datetime object has timestamp
         // value while would make direct comparison always return false
         // due to timestamp

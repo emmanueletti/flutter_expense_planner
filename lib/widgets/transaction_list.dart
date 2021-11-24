@@ -12,6 +12,7 @@ class TransactionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
     // Another way of creating a sizeable "div" is to wrap Card / widgets in
     // a Container/SizedBox that has a clearly defined width. Card will adjust
     // its size dependent on a clearly defined parent. Apparently when Column
@@ -40,25 +41,29 @@ class TransactionList extends StatelessWidget {
       // the function will provide an index counter that can then be used to
       // reference an array/list
       child: userTransactions.isEmpty
-          ? Column(
-              children: [
-                Text(
-                  'No transactions added yet!',
-                  style: Theme.of(context).textTheme.headline6,
-                ),
-                const SizedBox(
-                  height: 50,
-                ),
-                SizedBox(
-                  height: 200,
-                  child: Image.asset(
-                    'assets/images/waiting.png',
-                    // same as doing image width/height as 100% in css
-                    // will cover the parents dimensions
-                    fit: BoxFit.cover,
-                  ),
-                )
-              ],
+          ? LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                return Column(
+                  children: [
+                    Text(
+                      'No transactions added yet!',
+                      style: Theme.of(context).textTheme.headline6,
+                    ),
+                    const SizedBox(
+                      height: 50,
+                    ),
+                    SizedBox(
+                      height: constraints.maxHeight * 0.6,
+                      child: Image.asset(
+                        'assets/images/waiting.png',
+                        // same as doing image width/height as 100% in css
+                        // will cover the parents dimensions
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  ],
+                );
+              },
             )
           : ListView.builder(
               itemCount: userTransactions.length,
@@ -109,15 +114,24 @@ class TransactionList extends StatelessWidget {
                           ],
                         ),
                         const Expanded(
-                            child: SizedBox(
-                          width: 10,
-                        )),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () =>
-                              deleteTransaction(userTransactions[index].id),
-                          color: Theme.of(context).errorColor,
-                        )
+                          child: SizedBox(
+                            width: 10,
+                          ),
+                        ),
+                        mediaQuery.size.width < 360
+                            ? IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => deleteTransaction(
+                                    userTransactions[index].id),
+                                color: Theme.of(context).errorColor,
+                              )
+                            : FlatButton.icon(
+                                icon: Icon(Icons.delete),
+                                label: Text('Delete'),
+                                textColor: Theme.of(context).errorColor,
+                                onPressed: () => deleteTransaction(
+                                    userTransactions[index].id),
+                              )
                       ],
                     ),
                   ),

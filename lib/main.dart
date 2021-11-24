@@ -1,10 +1,27 @@
+import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_expense_planner/widgets/chart.dart';
-import 'package:flutter_expense_planner/widgets/new_transaction.dart';
-import 'package:flutter_expense_planner/widgets/transaction_list.dart';
+import 'package:flutter/services.dart';
+
+import './widgets/chart.dart';
+import './widgets/new_transaction.dart';
+import './widgets/transaction_list.dart';
 import 'models/transaction.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  // System chrome allows the setting of application / systems wide settings for
+  // the app. Such as removing landscape mode.
+  // !IMPORTANT: Before setting systems things make sure to first call
+  // WidgetsFlutterBinding.ensureInitialized()
+
+  // WidgetsFlutterBinding.ensureInitialized();
+  // SystemChrome.setPreferredOrientations([
+  //   DeviceOrientation.portraitUp,
+  //   DeviceOrientation.portraitDown,
+  // ]);
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -53,6 +70,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  bool _showChart = false;
   List<Transaction> _userTransactions = [
     Transaction(
       id: 't1',
@@ -121,28 +139,111 @@ class _MyHomePageState extends State<MyHomePage> {
   // in the widget tree. It is "passed" around automatically throughout the widget
   // tree
   Widget build(BuildContext context) {
-    final appBar = AppBar(
-      title: const Text('Personal Expenses'),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () => _openNewTransactionForm(context, _addNewTransaction),
-        ),
-      ],
+    // Don't create the context object repeatedly. Potentially a performance hit
+    // to do that. Instead store it in a variable and use it where needed
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+
+    // Moved app bar into its own variable so that we have access to "preferredSize"
+    // property for responsive sizing
+    final appBar = Platform.isIOS
+        ? CupertinoNavigationBar(
+            middle: Text('Personal Expenses'),
+            trailing: Row(
+              // Main axis size set to min tells the Row or Column widget to
+              // shrink to be only as large as its children need it to be
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // IconButton is a material button and can't be used in a cupertino
+                // environment. We have to make a custom icon button ourselves
+                GestureDetector(
+                  child: Icon(CupertinoIcons.add),
+                  onTap: () =>
+                      _openNewTransactionForm(context, _addNewTransaction),
+                )
+              ],
+            ),
+          )
+        : AppBar(
+            title: const Text('Personal Expenses'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () =>
+                    _openNewTransactionForm(context, _addNewTransaction),
+              ),
+            ],
+          );
+
+    final txListWidget = Container(
+      // MediaQuery.of(context).padding.top gives the height that the
+      // system allocates for icons and such at the very top of the device
+      height: (mediaQuery.size.height -
+              (appBar as ObstructingPreferredSizeWidget).preferredSize.height -
+              mediaQuery.padding.top) *
+          0.7,
+      child: TransactionList(_userTransactions, _deleteTransaction),
     );
-    return Scaffold(
-      appBar: appBar,
-      // You can make any container WITH A DEFINED HEIGHT scrollable by making
-      // its child a SingleChildScrollView.
-      // Here we are making the entire app body scrollable, and the
-      // SingleChildScrollView widget is getting its height from the scaffold
-      // widget, which is a top level widget with a height equaling the
-      // device's height
-      // Making the whole app body scrollable can solve the problem of overflow
-      // errors when the keyboard pops up
-      body: SingleChildScrollView(
+
+    final chartWidget = SizedBox(
+      // A width of double.infinity is a enum representation of a behind
+      // the scenes number. "double.infinity" tells Flutter to give
+      // the widget as much width as possible.
+      width: double.infinity,
+      child: Chart(_recentTransactions),
+      height: (mediaQuery.size.height -
+              appBar.preferredSize.height -
+              mediaQuery.padding.top) *
+          0.6,
+    );
+
+    // SafeArea is a widget built into flutter to make sure every thing is
+    // rendered within the bounderies alloted by the device system
+    final pageBody = SafeArea(
+      child: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Special syntax in new verison of Flutter
+            // for using an if conditional inside of a list
+            // this is similiar to Reacts {boolean ?? component} pattern of
+            // only rendering a component if the first expression is truthy
+            // with this special syntax DO NOT use curly braces
+            if (isLandscape)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Show Chart',
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                  // Certain widgets have an adaptive custom constructor which
+                  // will create platform specific versions of themselves (iOS
+                  // vs android)
+                  Switch.adaptive(
+                    activeColor: Theme.of(context).accentColor,
+                    value: _showChart,
+                    onChanged: (val) {
+                      setState(() {
+                        _showChart = val;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            if (!isLandscape)
+              SizedBox(
+                // A width of double.infinity is a enum representation of a behind
+                // the scenes number. "double.infinity" tells Flutter to give
+                // the widget as much width as possible.
+                width: double.infinity,
+                child: Chart(_recentTransactions),
+                height: (mediaQuery.size.height -
+                        appBar.preferredSize.height -
+                        mediaQuery.padding.top) *
+                    0.3,
+              ),
+            if (!isLandscape) txListWidget,
             // Reason to use Container as a middle widget to control the size is
             // b/c "Card" widget dimensions is dependent on the size of its children.
             // And "Text" widget dimensions is dependent on the size of its text
@@ -150,34 +251,51 @@ class _MyHomePageState extends State<MyHomePage> {
             // Container acts as the middle widget to control the size, which
             // subsequently controls the size of Card and Text as the sizeable
             // Container now serves as the direct child of Card and direct parent of Text
-            SizedBox(
-              // A width of double.infinity is a enum representation of a behind
-              // the scenes number. "double.infinity" tells Flutter to give
-              // the widget as much width as possible.
-              width: double.infinity,
-              child: Chart(_recentTransactions),
-              height: (MediaQuery.of(context).size.height -
-                      appBar.preferredSize.height -
-                      MediaQuery.of(context).padding.top) *
-                  0.3,
-            ),
-            Container(
-              height: (MediaQuery.of(context).size.height -
-                      appBar.preferredSize.height -
-                      MediaQuery.of(context).padding.top) *
-                  0.7,
-              child: TransactionList(_userTransactions, _deleteTransaction),
-            ),
+            if (isLandscape)
+              _showChart
+                  ? SizedBox(
+                      // A width of double.infinity is a enum representation of a behind
+                      // the scenes number. "double.infinity" tells Flutter to give
+                      // the widget as much width as possible.
+                      width: double.infinity,
+                      child: Chart(_recentTransactions),
+                      height: (mediaQuery.size.height -
+                              appBar.preferredSize.height -
+                              mediaQuery.padding.top) *
+                          0.6,
+                    )
+                  : txListWidget,
           ],
         ),
       ),
-
-      // both named arguements to Scaffold widget
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () => _openNewTransactionForm(context, _addNewTransaction),
-      ),
     );
+    return Platform.isIOS
+        ? CupertinoPageScaffold(
+            navigationBar: appBar,
+            child: pageBody,
+          )
+        : Scaffold(
+            appBar: appBar,
+            // You can make any container WITH A DEFINED HEIGHT scrollable by making
+            // its child a SingleChildScrollView.
+            // Here we are making the entire app body scrollable, and the
+            // SingleChildScrollView widget is getting its height from the scaffold
+            // widget, which is a top level widget with a height equaling the
+            // device's height
+            // Making the whole app body scrollable can solve the problem of overflow
+            // errors when the keyboard pops up
+            body: pageBody,
+
+            // both named arguements to Scaffold widget
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: Platform.isIOS
+                ? Container()
+                : FloatingActionButton(
+                    child: Icon(Icons.add),
+                    onPressed: () =>
+                        _openNewTransactionForm(context, _addNewTransaction),
+                  ),
+          );
   }
 }
