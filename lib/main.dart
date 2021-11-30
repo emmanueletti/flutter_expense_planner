@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import './widgets/chart.dart';
 import './widgets/new_transaction.dart';
@@ -20,10 +19,12 @@ void main() {
   //   DeviceOrientation.portraitDown,
   // ]);
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
 
         appBarTheme: AppBarTheme(
           textTheme: ThemeData.light().textTheme.copyWith(
-                headline6: TextStyle(
+                headline6: const TextStyle(
                   fontFamily: 'OpenSans',
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -69,9 +70,27 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+// Using mixin with "with" keyword
+// mixins allow us to use aspects of another class without having to directly
+// extend/inherit from it.
+// This is useful is getting around limitation of only being able to extend/inherit
+// from 1 class.
+
+// in this case, WidgetsBindingObserver allows us to listen to overall app
+// lifecyle - inactive, paused, resumed, suspending
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+  // Called whenever APP lifecycle changes. Important to call this in a State
+  // object in order to handle disposing of this listener when widget is removed
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {}
+
+  @override
+  dispose() {
+    super.dispose();
+  }
+
   bool _showChart = false;
-  List<Transaction> _userTransactions = [
+  final List<Transaction> _userTransactions = [
     Transaction(
       id: 't1',
       title: 'New Shoes',
@@ -90,9 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // Darts filter function
     return _userTransactions.where((tx) {
       return tx.date.isAfter(
-        DateTime.now().subtract(
-          const Duration(days: 7),
-        ),
+        DateTime.now().subtract(const Duration(days: 7)),
       );
     }).toList();
   }
@@ -134,6 +151,73 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  // Moved into special widget builder functions for improved code readability
+  // This functions help us build parts of widget tree but not so independent
+  // enough to make them thier own widget files
+  List<Widget> _buildLandscapeContent(
+    MediaQueryData mediaQuery,
+    ObstructingPreferredSizeWidget appBar,
+    Widget txListWidget,
+  ) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Show Chart',
+            style: Theme.of(context).textTheme.headline6,
+          ),
+          // Certain widgets have an adaptive custom constructor which
+          // will create platform specific versions of themselves (iOS
+          // vs android)
+          Switch.adaptive(
+            activeColor: Theme.of(context).accentColor,
+            value: _showChart,
+            onChanged: (val) {
+              setState(() {
+                _showChart = val;
+              });
+            },
+          ),
+        ],
+      ),
+      _showChart
+          ? SizedBox(
+              // A width of double.infinity is a enum representation of a behind
+              // the scenes number. "double.infinity" tells Flutter to give
+              // the widget as much width as possible.
+              width: double.infinity,
+              child: Chart(_recentTransactions),
+              height: (mediaQuery.size.height -
+                      appBar.preferredSize.height -
+                      mediaQuery.padding.top) *
+                  0.6,
+            )
+          : txListWidget
+    ];
+  }
+
+  List<Widget> _buildPortraitContent(
+    MediaQueryData mediaQuery,
+    ObstructingPreferredSizeWidget appBar,
+    Widget txListWidget,
+  ) {
+    return [
+      SizedBox(
+        // A width of double.infinity is a enum representation of a behind
+        // the scenes number. "double.infinity" tells Flutter to give
+        // the widget as much width as possible.
+        width: double.infinity,
+        child: Chart(_recentTransactions),
+        height: (mediaQuery.size.height -
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
+            0.3,
+      ),
+      txListWidget,
+    ];
+  }
+
   @override
   // context is an object with ALOT of metadata about the widget and its position
   // in the widget tree. It is "passed" around automatically throughout the widget
@@ -148,7 +232,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // property for responsive sizing
     final appBar = Platform.isIOS
         ? CupertinoNavigationBar(
-            middle: Text('Personal Expenses'),
+            middle: const Text('Personal Expenses'),
             trailing: Row(
               // Main axis size set to min tells the Row or Column widget to
               // shrink to be only as large as its children need it to be
@@ -157,7 +241,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // IconButton is a material button and can't be used in a cupertino
                 // environment. We have to make a custom icon button ourselves
                 GestureDetector(
-                  child: Icon(CupertinoIcons.add),
+                  child: const Icon(CupertinoIcons.add),
                   onTap: () =>
                       _openNewTransactionForm(context, _addNewTransaction),
                 )
@@ -175,7 +259,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           );
 
-    final txListWidget = Container(
+    final txListWidget = SizedBox(
       // MediaQuery.of(context).padding.top gives the height that the
       // system allocates for icons and such at the very top of the device
       height: (mediaQuery.size.height -
@@ -183,18 +267,6 @@ class _MyHomePageState extends State<MyHomePage> {
               mediaQuery.padding.top) *
           0.7,
       child: TransactionList(_userTransactions, _deleteTransaction),
-    );
-
-    final chartWidget = SizedBox(
-      // A width of double.infinity is a enum representation of a behind
-      // the scenes number. "double.infinity" tells Flutter to give
-      // the widget as much width as possible.
-      width: double.infinity,
-      child: Chart(_recentTransactions),
-      height: (mediaQuery.size.height -
-              appBar.preferredSize.height -
-              mediaQuery.padding.top) *
-          0.6,
     );
 
     // SafeArea is a widget built into flutter to make sure every thing is
@@ -210,65 +282,14 @@ class _MyHomePageState extends State<MyHomePage> {
             // only rendering a component if the first expression is truthy
             // with this special syntax DO NOT use curly braces
             if (isLandscape)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Show Chart',
-                    style: Theme.of(context).textTheme.headline6,
-                  ),
-                  // Certain widgets have an adaptive custom constructor which
-                  // will create platform specific versions of themselves (iOS
-                  // vs android)
-                  Switch.adaptive(
-                    activeColor: Theme.of(context).accentColor,
-                    value: _showChart,
-                    onChanged: (val) {
-                      setState(() {
-                        _showChart = val;
-                      });
-                    },
-                  ),
-                ],
-              ),
+              ..._buildLandscapeContent(mediaQuery, appBar, txListWidget),
             if (!isLandscape)
-              SizedBox(
-                // A width of double.infinity is a enum representation of a behind
-                // the scenes number. "double.infinity" tells Flutter to give
-                // the widget as much width as possible.
-                width: double.infinity,
-                child: Chart(_recentTransactions),
-                height: (mediaQuery.size.height -
-                        appBar.preferredSize.height -
-                        mediaQuery.padding.top) *
-                    0.3,
-              ),
-            if (!isLandscape) txListWidget,
-            // Reason to use Container as a middle widget to control the size is
-            // b/c "Card" widget dimensions is dependent on the size of its children.
-            // And "Text" widget dimensions is dependent on the size of its text
-            // content and it's parent size. So with both dependent on each other
-            // Container acts as the middle widget to control the size, which
-            // subsequently controls the size of Card and Text as the sizeable
-            // Container now serves as the direct child of Card and direct parent of Text
-            if (isLandscape)
-              _showChart
-                  ? SizedBox(
-                      // A width of double.infinity is a enum representation of a behind
-                      // the scenes number. "double.infinity" tells Flutter to give
-                      // the widget as much width as possible.
-                      width: double.infinity,
-                      child: Chart(_recentTransactions),
-                      height: (mediaQuery.size.height -
-                              appBar.preferredSize.height -
-                              mediaQuery.padding.top) *
-                          0.6,
-                    )
-                  : txListWidget,
+              ..._buildPortraitContent(mediaQuery, appBar, txListWidget),
           ],
         ),
       ),
     );
+
     return Platform.isIOS
         ? CupertinoPageScaffold(
             navigationBar: appBar,

@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class NewTransaction extends StatefulWidget {
-  NewTransaction(this.setUserTxState, {Key? key}) : super(key: key);
+  const NewTransaction(this.setUserTxState, {Key? key}) : super(key: key);
 
-  void Function(String, double, DateTime) setUserTxState;
+  final void Function(String, double, DateTime) setUserTxState;
 
   @override
   State<NewTransaction> createState() => _NewTransactionState();
@@ -15,8 +15,8 @@ class NewTransaction extends StatefulWidget {
 
 class _NewTransactionState extends State<NewTransaction> {
   final _amountController = TextEditingController();
-  final _titleController = TextEditingController();
   DateTime? _selectedDate;
+  final _titleController = TextEditingController();
 
   // make methods in private classes private
   void _submitData() {
@@ -59,6 +59,36 @@ class _NewTransactionState extends State<NewTransaction> {
         _selectedDate = pickedDate;
       });
     });
+  }
+
+  // Examples of widget lifecycle methods
+  // initState runs only once when widget is first built
+  // great for fetching and loading initial states via http calls, etc.
+  @override
+  void initState() {
+    // now reccomended in official docs to call super first in all cases
+    // before implementing logic
+    super.initState();
+    print('initState() called');
+  }
+
+  // runs when widget is rebuilt after initial build
+  // Flutter gives access to oldwidget in order to do comparisions and conditional
+  // logic as a convenience feature
+  // used rarely - can potentially be used for re-fetching data if a certain
+  // property was changed
+  @override
+  void didUpdateWidget(NewTransaction oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    print('didUpdateWidget() called');
+  }
+
+  // runs when widget is removed from the tree. great for cleaning up connections
+  // and such
+  @override
+  void dispose() {
+    super.dispose();
+    print('dispose() called');
   }
 
   @override

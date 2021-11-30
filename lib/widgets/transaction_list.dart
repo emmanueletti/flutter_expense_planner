@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_expense_planner/widgets/transaction_item.dart';
 import 'package:intl/intl.dart';
 
 import '../models/transaction.dart';
@@ -8,7 +9,7 @@ class TransactionList extends StatelessWidget {
       {Key? key})
       : super(key: key);
   final List<Transaction> userTransactions;
-  final void Function(String) deleteTransaction;
+  final void Function(String txId) deleteTransaction;
 
   @override
   Widget build(BuildContext context) {
@@ -68,74 +69,9 @@ class TransactionList extends StatelessWidget {
           : ListView.builder(
               itemCount: userTransactions.length,
               itemBuilder: (BuildContext context, int index) {
-                return SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                    child: Row(
-                      children: <Widget>[
-                        Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 15,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Theme.of(context).primaryColor,
-                              width: 2,
-                            ),
-                          ),
-                          padding: const EdgeInsets.all(10),
-                          child: Text(
-                            // toStringAsFixed is the way to get a number to a specified
-                            // decimal place
-                            "\$${userTransactions[index].amount.toStringAsFixed(2)}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              userTransactions[index].title,
-                              style: Theme.of(context).textTheme.headline6,
-                            ),
-                            Text(
-                              // DateFormat package
-                              DateFormat.yMMMd()
-                                  .format(userTransactions[index].date),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey),
-                            )
-                          ],
-                        ),
-                        const Expanded(
-                          child: SizedBox(
-                            width: 10,
-                          ),
-                        ),
-                        mediaQuery.size.width < 360
-                            ? IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => deleteTransaction(
-                                    userTransactions[index].id),
-                                color: Theme.of(context).errorColor,
-                              )
-                            : FlatButton.icon(
-                                icon: Icon(Icons.delete),
-                                label: Text('Delete'),
-                                textColor: Theme.of(context).errorColor,
-                                onPressed: () => deleteTransaction(
-                                    userTransactions[index].id),
-                              )
-                      ],
-                    ),
-                  ),
-                );
+                return TransactionItem(
+                    transaction: userTransactions[index],
+                    deleteTransaction: deleteTransaction);
               },
             ),
     );
