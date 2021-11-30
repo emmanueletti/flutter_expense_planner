@@ -79,14 +79,24 @@ class MyHomePage extends StatefulWidget {
 // in this case, WidgetsBindingObserver allows us to listen to overall app
 // lifecyle - inactive, paused, resumed, suspending
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
-  // Called whenever APP lifecycle changes. Important to call this in a State
-  // object in order to handle disposing of this listener when widget is removed
+  // initialize listners to app lifecycle
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {}
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addObserver(this);
+  }
 
+  // Called whenever APP lifecycle changes.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print(state);
+  }
+
+  // Important: clear all listeners to app lifecycle
   @override
   dispose() {
     super.dispose();
+    WidgetsBinding.instance?.removeObserver(this);
   }
 
   bool _showChart = false;
